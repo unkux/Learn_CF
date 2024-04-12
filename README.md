@@ -112,3 +112,26 @@ FLAGS
         Default: 1
         Parallelization on CPU.
 ```
+
+## Datasets
+
+DATA STRUCTURES:
+```
+Instances
+│
+├── 1.00  # power demands factor
+│   │
+│   ├── generations.csv  # cascading failures
+│   │
+│   ├── ig_data.mat  # power grid data
+│   │
+│   ├── res_cnt_size.mat  # benchmarks
+│   │
+│   └── sub
+│       ├── 9 -> ..  # for managing instances, can be any value
+│       └── ...
+├── ...
+│
+└── 2.00
+    └── ...
+```
