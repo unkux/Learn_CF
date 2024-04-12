@@ -1,0 +1,7 @@
+D_OUTPUT = 'results'
+F_PARAM_TR = 'ptrace_%s.npy'
+F_FT_SC = 'fmat_%s.pkl'
+F_THETA = 'theta_%s.npy'
+F_RANK = 'rank_%s.npy'
+F_PMAT = 'pmat_%s.mtx'
+F_CNTZ = 'cntz_%s.npz'
