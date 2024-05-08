@@ -28,6 +28,9 @@ def set_ktype(v):
     global CLOGLOG
     CLOGLOG = v
 
+def get_ktype():
+    return CLOGLOG
+
 VERBOSE = 0
 def set_verbose(v):
     global VERBOSE

@@ -2,7 +2,7 @@ from importlib import import_module
 import numba_dpex as dpex
 import numpy as np
 
-from utils import _use_dpt_arr
+from utils import _use_dpt_arr, get_ktype
 if _use_dpt_arr:
     import dpctl.tensor as dpt
     import dpctl
@@ -112,4 +112,4 @@ class Kernel:
             extra['T'] = False
         if extra:
             self.kn.compute_aux_mats(self.F, theta, self.knargs, test=True, ndrange=None, extra=extra)
-        return 1 - np.exp(-self.FtDt)
+        return (1 - np.exp(-self.FtDt)) if get_ktype() else self.FtDt
