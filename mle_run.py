@@ -47,6 +47,7 @@ class MLE:
         self.seed = kwargs.get('seed', 0)
 
         self.gpu = kwargs.get('gpu', False)
+        self.block = kwargs.get('block', 1)
         self.test = kwargs.get('test', False)
         self.verbose = kwargs.get('verbose', False)
         self.kn = Kernel(self.F, self.D, self.Ma, self.Ca, self.gpu, verbose=self.verbose)
@@ -95,7 +96,7 @@ class MLE:
                 n_samples = samples.cnt_samples(self.Ma, self.Ca, self.BR_SIZE, (rs, self.ws), self.gpu)
         else:
             rs = self.rs
-        self.g, self.ll = self.kn.compute_gl(params, n_samples, (rs, self.ws), self.test)
+        self.g, self.ll = self.kn.compute_gl(params, n_samples, (rs, self.ws), self.test, self.block)
 
         if self.mask is not None:
             self.g[self.mask], params[self.mask] = 0, 0
@@ -108,7 +109,7 @@ class MLE:
         self.g -= self.a1*np.sign(params) + 2*self.a2*params
         self.it += 1
         if self.verbose:
-            print(f"{self.it:<5}", "max |gradient|:", f"{max(abs(self.g)):<25}", 'loglike:', self.ll, flush=(self.it % 100 == 0))
+            print(f"{self.it:<5}", "max |gradient|:", f"{max(abs(self.g)):<25}", 'loglike:', self.ll, flush=(self.it % 1 == 0))
         # NOTE: the sign of gradient due to negative loglike
         return -self.g
 
@@ -176,7 +177,7 @@ class MLE:
 
 def run(instance, method='lbfgsb', gpu=False, poly_fts=False, dist=False, corr=0.9, sel=-1, fr=1,
         rank=None, a1=0, a2=0, B='inf', tol=1e-6, maxiter=200, weight=[], test=None, pfunc='cloglog',
-        theta=0, resample=False, precision=6, output='', build_only=False, scaler='max_abs', verbose=0,
+        theta=0, resample=False, precision=6, output='', build_only=False, scaler='max_abs', block=1, verbose=0,
         **_):
     set_verbose(verbose)
     genfile = f'{instance}/generations.csv'
@@ -219,7 +220,7 @@ def run(instance, method='lbfgsb', gpu=False, poly_fts=False, dist=False, corr=0
     @dev_ctx(gpu=gpu, verbose=verbose)
     def mle_run(F, D, Ma, Ca, method, theta=None, **kwargs):
         set_ktype(pfunc == 'cloglog')
-        mle = MLE(F, D, Ma, Ca, method, sel=sel, rank=rank, test=test,
+        mle = MLE(F, D, Ma, Ca, method, sel=sel, rank=rank, test=test, block=block,
                   a1=a1, a2=a2, B=float(B), weight=weight, resample=resample, **kwargs)
         # NOTE: consider the scale of features when testing
         if test:

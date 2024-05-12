@@ -42,7 +42,7 @@ class Kernel:
                 self.Fg = dpt.asarray(self.F, device=self.device)
             self.R, self.ndrange = self.init_gl_kernel(glb_g0=128)
 
-        self.g, self.ll = np.zeros((6, self.FT_SIZE)), np.zeros(6)
+        self.gl = np.zeros((6, self.FT_SIZE+1))
 
     def init_gl_kernel(self, glb_g0=128*8):
         gl_size = self.FT_SIZE + 1
@@ -63,7 +63,7 @@ class Kernel:
                 Rs = dpt.asnumpy(self.R).sum(axis=0)
             else:
                 Rs = self.R.sum(axis=0)
-            return Rs[:-1], Rs[-1]
+            return Rs
 
     def _compute_gl_c1(self, M, knargs, C0, y):
         if not self.gpu:
@@ -78,10 +78,10 @@ class Kernel:
                 Rs = dpt.asnumpy(self.R).sum(axis=0)
             else:
                 Rs = self.R.sum(axis=0)
-            return Rs[:-1], Rs[-1]
+            return Rs
 
     #@Timer()
-    def compute_gl(self, theta, n_samples, rdata, test):
+    def compute_gl(self, theta, n_samples, rdata, test, block):
         self.kn.compute_aux_mats(self.F, theta, self.knargs, test, ndrange=None)
         knargs = self.knargs
         if self.gpu and _use_dpt_arr:
@@ -90,19 +90,22 @@ class Kernel:
                 knargs.append(dpt.asarray(v, device=self.device) if isinstance(v, np.ndarray) else v)
         rs, ws = rdata
 
+        self.gl[:] = 0
         for i, M in self.Ma.items():
-            M = samples.select(M, i, rs)
-            if M is None:
-                self.g[i, :], self.ll[i] = 0, 0
+            Ms = samples.select(M, i, rs)
+            if Ms is None:
                 continue
-            if self.gpu and _use_dpt_arr:
-                M = dpt.asarray(M, device=self.device)
-            if i in [0, 1, 4]:
-                self.g[i], self.ll[i] = self._compute_gl_c0(M, knargs)
-            else:
-                self.g[i], self.ll[i] = self._compute_gl_c1(M, knargs, self.Ca[i], i==3)
+            for k in range(block):
+                M = Ms[k::block, :]
+                if self.gpu and _use_dpt_arr:
+                    M = dpt.asarray(M, device=self.device)
+                if i in [0, 1, 4]:
+                    self.gl[i] += self._compute_gl_c0(M, knargs)
+                else:
+                    self.gl[i] += self._compute_gl_c1(M, knargs, self.Ca[i], i==3)
 
-        return self.g.T.dot(ws)/n_samples, self.ll.dot(ws)/n_samples
+        gl = self.gl.T.dot(ws)/n_samples
+        return gl[:-1], gl[-1]
 
     def prob_matrix(self, theta=None):
         extra = {}

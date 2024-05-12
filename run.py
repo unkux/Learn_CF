@@ -285,7 +285,7 @@ def evaluate(r, input_m, w=np.ones(4)/4, dtype=1):
 
 def run(instance, method='lbfgsb', gpu=False, poly_fts=False, dist=False, corr=0.9, sel=-1, fr=1,
         rank=None, a1=0.001, a2=0.01, B='inf', tol=1e-6, maxiter=300, weight=[], test=None, pfunc='logistic',
-        theta=0, resample=False, precision=6, output='', build_only=False, scaler='max_abs', verbose=0,
+        theta=0, resample=False, precision=6, output='', build_only=False, scaler='max_abs', block=1, verbose=0,
         fc=0.05, no_mc=-1, fp=1, rerun=False, init_failures='', k=1, max_workers=1):
     input_m = locals().copy()
     set_verbose(input_m['verbose'])
