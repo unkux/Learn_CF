@@ -14,7 +14,7 @@ It supports running on both general CPU and Intel GPU (via OpenCL standard), the
 
 The main file is `run.py` or a shell script `run.sh`. Besides, `mle_run.py, features.py, samples.py, simulate_igraph.py` can run separately by needs.
 
-```sh
+```
 NAME
     run.py
 
@@ -47,6 +47,9 @@ FLAGS
     --scaler=SCALER
         Default: 'max_abs'
         Feature scaler.
+    --block=BLOCK
+        Default: 1
+        Split data.
     --sel=SEL
         Default: -1
         Select feature dimension.
